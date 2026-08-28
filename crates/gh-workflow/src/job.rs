@@ -201,6 +201,26 @@ impl Job {
     }
 }
 
+/// A job plus the id it is registered under, so callers can wire `needs:`
+/// without restating the string.
+#[derive(Clone)]
+pub struct NamedJob {
+    pub name: String,
+    pub job: Job,
+}
+
+impl NamedJob {
+    pub fn new(name: impl ToString, job: Job) -> Self {
+        Self { name: name.to_string(), job }
+    }
+
+    /// Rebuilds the job, keeping the name — so wiring `needs:` stays fluent
+    /// without unpacking and reassembling the pair.
+    pub fn map(self, f: impl FnOnce(Job) -> Job) -> Self {
+        Self { name: self.name, job: f(self.job) }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
